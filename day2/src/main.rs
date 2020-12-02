@@ -6,23 +6,35 @@ use std::io;
 struct PasswordData {
     min: usize,
     max: usize,
-    letter: String,
+    letter: char,
     password: String,
 }
 
 impl PasswordData {
-    pub fn new(min: usize, max: usize, letter: &str, password: &str) -> Self {
+    pub fn new(min: usize, max: usize, letter: char, password: &str) -> Self {
         Self {
             min,
             max,
-            letter: String::from(letter),
+            letter,
             password: String::from(password),
         }
     }
 
     pub fn is_valid(&self) -> bool {
-        let match_count = self.password.matches(self.letter.as_str()).count();
+        let match_count = self.password.matches(self.letter).count();
         match_count >= self.min && match_count <= self.max
+    }
+
+    pub fn is_valid_2(&self) -> bool {
+        // why is indexing into a string so complicated in rust
+        let pass_chars: Vec<char> = self
+            .password
+            .as_bytes()
+            .iter()
+            .map(|&b| b as char)
+            .collect();
+        (self.letter == pass_chars[self.min - 1] && self.letter != pass_chars[self.max - 1])
+            || (self.letter != pass_chars[self.min - 1] && self.letter == pass_chars[self.max - 1])
     }
 }
 
@@ -42,7 +54,7 @@ fn parse_data(s: &str) -> Vec<PasswordData> {
                 (Some(min), Some(max), Some(letter), Some(password)) => Some(PasswordData::new(
                     min.as_str().parse::<usize>().unwrap(),
                     max.as_str().parse::<usize>().unwrap(),
-                    letter.as_str(),
+                    letter.as_str().parse::<char>().unwrap(),
                     password.as_str(),
                 )),
                 _ => None,
@@ -51,19 +63,25 @@ fn parse_data(s: &str) -> Vec<PasswordData> {
         .collect()
 }
 
-fn count_valid(password_datas: &Vec<PasswordData>) -> u64 {
-    let mut count = 0;
+/// Return the number of valid passwords with methods for part 1 and part 2
+fn count_valid(password_datas: &Vec<PasswordData>) -> (u64, u64) {
+    let (mut count1, mut count2) = (0, 0);
     for password_data in password_datas {
         if password_data.is_valid() {
-            count += 1;
+            count1 += 1;
+        }
+        if password_data.is_valid_2() {
+            count2 += 1;
         }
     }
-    count
+    (count1, count2)
 }
 
 fn main() {
     let s = input_to_string()
         .expect("Could not read input.txt, make sure it is in the current directory");
     let password_datas = parse_data(&s);
-    println!("Day 1 part 1: {}", count_valid(&password_datas));
+    let (count1, count2) = count_valid(&password_datas);
+    println!("Day 1 part 1: {}", count1);
+    println!("Day 1 part 2: {}", count2);
 }
