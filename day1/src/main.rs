@@ -29,6 +29,20 @@ fn find_pair_sum(data: &Vec<i64>, target: i64) -> Option<(usize, usize)> {
     None
 }
 
+fn find_triplet_sum(data: &Vec<i64>, target: i64) -> Option<(usize, usize, usize)> {
+    // brute force!
+    for i in 0..data.len() {
+        for j in (i + 1)..data.len() {
+            for k in (j + 1)..data.len() {
+                if data[i] + data[j] + data[k] == target {
+                    return Some((i, j, k));
+                }
+            }
+        }
+    }
+    None
+}
+
 fn main() {
     let s = input_to_string().expect(
         "Could not read input file, make sure it is in the current directory and named input.txt",
@@ -37,4 +51,6 @@ fn main() {
     let target = 2020;
     let (i, j) = find_pair_sum(&data, target).expect("No pair of values was found");
     println!("Day 1 part 1: {}", data[i] * data[j]);
+    let (i, j, k) = find_triplet_sum(&data, target).expect("No triplet of values was found");
+    println!("Day 1 part 2: {}", data[i] * data[j] * data[k]);
 }
