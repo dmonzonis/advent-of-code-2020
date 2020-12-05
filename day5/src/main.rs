@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::env;
 use std::fs;
 use std::io;
@@ -31,7 +32,7 @@ fn compute_seat_id(seat: &str) -> u32 {
     front * 8 + left
 }
 
-fn find_highest_seat_id(seats: Vec<String>) -> u32 {
+fn find_highest_seat_id(seats: &Vec<String>) -> u32 {
     let mut highest = 0;
     for seat in seats {
         let seat_id = compute_seat_id(&seat);
@@ -42,10 +43,26 @@ fn find_highest_seat_id(seats: Vec<String>) -> u32 {
     highest
 }
 
+fn find_missing_seat_id(seats: &Vec<String>) -> u32 {
+    // First compute a set with all the existing seats
+    let mut set = HashSet::new();
+    for seat in seats {
+        set.insert(compute_seat_id(&seat));
+    }
+    // Scan for the missing seat and make sure the seats with adjacent ids exist as well
+    for seat_id in 1..(127 * 8 + 6) {
+        if !set.contains(&seat_id) && set.contains(&(seat_id - 1)) && set.contains(&(seat_id + 1)) {
+            return seat_id;
+        }
+    }
+    panic!("Could not find missing seat");
+}
+
 fn main() {
     let s = file_to_string("input.txt").unwrap();
     let seats = s.lines().map(|w| w.to_owned()).collect();
-    println!("Part 1: {}", find_highest_seat_id(seats));
+    println!("Part 1: {}", find_highest_seat_id(&seats));
+    println!("Part 2: {}", find_missing_seat_id(&seats));
 }
 
 #[cfg(test)]
